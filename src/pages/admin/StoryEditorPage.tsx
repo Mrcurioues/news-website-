@@ -106,6 +106,9 @@ export const StoryEditorPage: React.FC<StoryEditorPageProps> = ({ storyId, onNav
   const [seoDescriptionHi, setSeoDescriptionHi] = useState(existingStory?.seoDescriptionHi || '');
   const [seoDescriptionBn, setSeoDescriptionBn] = useState(existingStory?.seoDescriptionBn || '');
 
+  const [slug, setSlug] = useState(existingStory?.slug || '');
+
+
   const [topicInput, setTopicInput] = useState('');
   const [publishMenuOpen, setPublishMenuOpen] = useState(false);
   const queryTab = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('tab') : null;
