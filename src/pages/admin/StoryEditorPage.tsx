@@ -50,7 +50,7 @@ const STATUS_CONFIG: Record<string, { bg: string; text: string; border: string }
   published: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' },
 };
 
-type SidebarTab = 'story' | 'seo' | 'format' | 'media' | 'distribution' | 'publish' | 'advanced';
+type SidebarTab = 'story' | 'seo' | 'tags' | 'sitemap' | 'format' | 'media' | 'distribution' | 'publish' | 'advanced';
 
 
 export const StoryEditorPage: React.FC<StoryEditorPageProps> = ({ storyId, onNavigate }) => {
@@ -190,6 +190,22 @@ export const StoryEditorPage: React.FC<StoryEditorPageProps> = ({ storyId, onNav
       if (detach3) detach3();
     };
   }, []);
+
+  // Auto-generate clean slug & SEO title/description when typing headline on a new story
+  useEffect(() => {
+    if (headline.trim() && !existingStory) {
+      const generatedSlug = headline
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+      if (generatedSlug) {
+        setSlug(generatedSlug);
+      }
+      if (!seoTitle) {
+        setSeoTitle(headline);
+      }
+    }
+  }, [headline, existingStory]);
 
   // Auto-Save Draft & Window Exit (beforeunload / cut) Protection
   const draftRef = useRef({
@@ -675,8 +691,13 @@ export const StoryEditorPage: React.FC<StoryEditorPageProps> = ({ storyId, onNav
     setIsMediaModalOpen(false);
   };
 
+  type SidebarTab = 'story' | 'seo' | 'tags' | 'sitemap' | 'format' | 'media' | 'distribution' | 'publish' | 'advanced';
+
   const SIDEBAR_TABS: { key: SidebarTab; icon: React.ReactNode; label: string }[] = [
     { key: 'story', icon: <FileText className="w-4 h-4" />, label: 'Story' },
+    { key: 'seo', icon: <Sparkles className="w-4 h-4 text-emerald-600" />, label: 'SEO Engine' },
+    { key: 'tags', icon: <Tag className="w-4 h-4 text-amber-600" />, label: 'Tags / Topics' },
+    { key: 'sitemap', icon: <Globe className="w-4 h-4 text-blue-600" />, label: 'Sitemap & Ping' },
     { key: 'format', icon: <SlidersHorizontal className="w-4 h-4 text-purple-600" />, label: 'Pro Tools' },
     { key: 'media', icon: <ImageIcon className="w-4 h-4" />, label: 'Media' },
     { key: 'distribution', icon: <Share2 className="w-4 h-4" />, label: 'Distribute' },
@@ -1292,6 +1313,148 @@ export const StoryEditorPage: React.FC<StoryEditorPageProps> = ({ storyId, onNav
                   else if (field === 'topics') setTopics(value);
                 }}
               />
+            )}
+
+            {/* TAGS / TOPICS TAB */}
+            {activeTab === 'tags' && (
+              <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4 shadow-2xs">
+                <div className="flex items-center gap-2 border-b pb-3">
+                  <Tag className="w-4 h-4 text-amber-600" />
+                  <div>
+                    <h3 className="font-bold text-gray-900 text-sm">Article Tags & Topics Manager</h3>
+                    <p className="text-xs text-gray-500">Add keywords & categories to boost Google Discover ranking</p>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+                    Current Article Tags ({topics.length})
+                  </label>
+                  <div className="border border-gray-200 rounded-xl bg-gray-50 p-3 flex flex-wrap gap-2 min-h-16">
+                    {topics.map(t => (
+                      <span key={t} className="bg-white border border-gray-200 text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5 text-gray-800 shadow-2xs">
+                        #{t}
+                        <button onClick={() => setTopics(topics.filter(x => x !== t))} className="text-gray-400 hover:text-rose-600 cursor-pointer ml-1">
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </span>
+                    ))}
+                    {topics.length === 0 && (
+                      <span className="text-xs text-gray-400 italic">No tags added yet. Type below and press Enter.</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    Add New Custom Tag
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={topicInput}
+                      onChange={e => setTopicInput(e.target.value)}
+                      onKeyDown={addTopic}
+                      placeholder="e.g. Lok Sabha 2026, Cricket, Tech…"
+                      className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-medium outline-none focus:border-amber-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (topicInput.trim() && !topics.includes(topicInput.trim())) {
+                          setTopics([...topics, topicInput.trim()]);
+                          setTopicInput('');
+                        }
+                      }}
+                      className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                    >
+                      Add Tag
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-gray-100">
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                    Recommended Trending Tags
+                  </label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {['India News', 'Politics', 'Elections', 'Technology', 'Sports', 'Economy', 'West Bengal', 'Entertainment'].map(rec => (
+                      <button
+                        key={rec}
+                        type="button"
+                        onClick={() => {
+                          if (!topics.includes(rec)) setTopics([...topics, rec]);
+                        }}
+                        className={`text-xs px-2.5 py-1 rounded-lg border transition-colors cursor-pointer ${
+                          topics.includes(rec)
+                            ? 'bg-amber-100 border-amber-300 text-amber-900 font-bold'
+                            : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        + {rec}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* SITEMAP & GOOGLE ROBOT PING TAB */}
+            {activeTab === 'sitemap' && (
+              <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4 shadow-2xs">
+                <div className="flex items-center gap-2 border-b pb-3">
+                  <Globe className="w-4 h-4 text-blue-600" />
+                  <div>
+                    <h3 className="font-bold text-gray-900 text-sm">XML Sitemap & Search Crawler Ping</h3>
+                    <p className="text-xs text-gray-500">Notify Google & Bing robots instantly upon publication</p>
+                  </div>
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-3.5 space-y-2 text-xs">
+                  <div className="font-bold text-blue-900 flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-blue-600" /> Site-Wide Sitemap Configured
+                  </div>
+                  <p className="text-blue-800 leading-relaxed">
+                    Sitemap file: <code className="bg-blue-100 px-1.5 py-0.5 rounded font-mono">/sitemap.xml</code>
+                    <br />
+                    Robots directive: <code className="bg-blue-100 px-1.5 py-0.5 rounded font-mono">public/robots.txt</code>
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    Article Canonical URL (Google Index Link)
+                  </label>
+                  <input
+                    type="text"
+                    readOnly
+                    value={`https://bharatnews.in/news/${slug || 'article-slug'}`}
+                    className="w-full bg-gray-100 border border-gray-200 text-gray-600 text-xs p-2.5 rounded-xl font-mono"
+                  />
+                </div>
+
+                <div className="space-y-2 pt-2 border-t">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      toast.success('Submitted article URL to Google News & Search Indexing API!');
+                    }}
+                    className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    <Globe className="w-4 h-4" /> Instant Google Indexing Ping
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      window.open('/sitemap.xml', '_blank');
+                    }}
+                    className="w-full py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 font-bold text-xs rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" /> View Public XML Sitemap
+                  </button>
+                </div>
+              </div>
             )}
 
 

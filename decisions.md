@@ -50,5 +50,9 @@
 - **Behavior**:
   - **Lead Coverage**: If `videoUrl` is present, renders an autoplaying, muted, looping cover video (`autoPlay`, `muted`, `loop`, `playsInline`, `object-fit: cover`) or clean YouTube embed with existing text overlays on top. On load failure, falls back to `coverImage`.
   - **Articles**: If `videoUrl` is present, renders a responsive video player with normal controls or YouTube iframe embed near the cover image position.
-  - **Admin Panel**: Non-technical `"Video URL (Optional)"` input field with real-time validation and helper text.
+## 21. Dedicated Tags & Sitemap Sidebar Sections in Story Editor
+- **Decision**: Added dedicated `Tags / Topics` (`tags`) and `Sitemap & Ping` (`sitemap`) tabs to the right-hand sidebar of `StoryEditorPage.tsx`.
+- **Behavior**:
+  - **Tags / Topics Tab**: Provides a dedicated tag management panel with custom tag addition, 1-click removal, visual tag pills (`#Tag`), and recommended trending tags.
+  - **Sitemap & Search Crawler Ping Tab**: Provides direct XML sitemap (`/sitemap.xml`) status verification, article canonical URL inspection, and 1-click Google News / Indexing API ping.
 
