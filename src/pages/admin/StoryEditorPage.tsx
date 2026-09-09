@@ -1906,8 +1906,9 @@ export const StoryEditorPage: React.FC<StoryEditorPageProps> = ({ storyId, onNav
                     <button
                       type="button"
                       onClick={() => {
-                        const slug = (headline || 'news-dispatch').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-                        toast.success(`AI Generated URL Slug: "/news/${slug}"`, { icon: '✨' });
+                        const generatedSlug = (headline || 'news-dispatch').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+                        setSlug(generatedSlug);
+                        toast.success(`AI Generated URL Slug: "/news/${generatedSlug}"`, { icon: '✨' });
                       }}
                       className="text-[11px] font-bold text-purple-700 bg-purple-100 hover:bg-purple-200 px-2 py-0.5 rounded-md cursor-pointer flex items-center gap-1 transition-colors"
                     >
@@ -1916,9 +1917,9 @@ export const StoryEditorPage: React.FC<StoryEditorPageProps> = ({ storyId, onNav
                   </div>
                   <input
                     type="text"
-                    value={headline ? headline.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : ''}
-                    readOnly
-                    className="w-full text-xs text-gray-600 bg-gray-100 border border-gray-200 rounded-lg px-3 py-2 outline-none font-mono"
+                    value={slug || (headline ? headline.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : '')}
+                    onChange={e => setSlug(e.target.value)}
+                    className="w-full text-xs text-gray-800 bg-white border border-gray-200 rounded-lg px-3 py-2 outline-none font-mono focus:border-rose-500"
                   />
                   <p className="text-[10px] text-gray-400">Permalink path on news portal</p>
                 </div>
