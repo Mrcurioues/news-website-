@@ -15,6 +15,7 @@ import { usePluginsStore } from '../../stores/pluginsStore';
 import { renderFormattedContent } from '../../utils/markdownRenderer';
 import { StoryStatus, StoryType } from '../../types/admin';
 import { attachBengaliSmartTyping } from '../../utils/bengaliInput';
+import { SeoAssistant } from '../../components/admin/seo/SeoAssistant';
 
 interface StoryEditorPageProps {
   storyId?: string;
@@ -49,7 +50,8 @@ const STATUS_CONFIG: Record<string, { bg: string; text: string; border: string }
   published: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' },
 };
 
-type SidebarTab = 'story' | 'format' | 'media' | 'distribution' | 'publish' | 'advanced';
+type SidebarTab = 'story' | 'seo' | 'format' | 'media' | 'distribution' | 'publish' | 'advanced';
+
 
 export const StoryEditorPage: React.FC<StoryEditorPageProps> = ({ storyId, onNavigate }) => {
   const { stories, addStory, updateStory, subscribeToRealtimeDrafts } = useStoriesStore();
@@ -1140,21 +1142,58 @@ export const StoryEditorPage: React.FC<StoryEditorPageProps> = ({ storyId, onNav
         {/* RIGHT SIDEBAR */}
         <div className="w-80 bg-white border-l border-gray-200 flex flex-col shrink-0 overflow-hidden">
           {/* Tabs */}
-          <div className="flex border-b border-gray-200 shrink-0">
-            {SIDEBAR_TABS.map(tab => (
+          <div className="flex border-b border-gray-200 shrink-0 overflow-x-auto hide-scrollbar">
+            {[
+              { key: 'story', label: 'Story', icon: <FileText className="w-3.5 h-3.5" /> },
+              { key: 'seo', label: 'SEO Engine', icon: <Sparkles className="w-3.5 h-3.5 text-emerald-600" /> },
+              { key: 'format', label: 'Format', icon: <SlidersHorizontal className="w-3.5 h-3.5" /> },
+              { key: 'media', label: 'Media', icon: <ImageIcon className="w-3.5 h-3.5" /> },
+              { key: 'publish', label: 'Publish', icon: <Globe className="w-3.5 h-3.5" /> },
+            ].map(tab => (
               <button
                 key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
+                onClick={() => setActiveTab(tab.key as any)}
                 title={tab.label}
-                className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs transition-colors cursor-pointer ${activeTab === tab.key ? 'text-rose-600 font-semibold border-b-2 border-rose-600' : 'text-gray-400 hover:text-gray-600'}`}
+                className={`flex-1 flex flex-col items-center gap-1 py-2.5 px-2 text-xs transition-colors cursor-pointer shrink-0 ${activeTab === tab.key ? 'text-rose-600 font-semibold border-b-2 border-rose-600 bg-rose-50/20' : 'text-gray-400 hover:text-gray-600'}`}
               >
                 {tab.icon}
-                <span className="text-[11px]">{tab.label}</span>
+                <span className="text-[10px] truncate">{tab.label}</span>
               </button>
             ))}
           </div>
 
           <div className="flex-1 overflow-y-auto p-5 space-y-6">
+
+            {/* SEO ENGINE ASSISTANT TAB */}
+            {activeTab === 'seo' && (
+              <SeoAssistant
+                story={{
+                  id: storyId,
+                  headline,
+                  summary,
+                  body,
+                  slug,
+                  section,
+                  topics,
+                  byline,
+                  mainImage,
+                  mainImageAlt,
+                  seoTitle,
+                  seoDescription
+                }}
+                allStories={stories}
+                onUpdateField={(field, value) => {
+                  if (field === 'headline') setHeadline(value);
+                  else if (field === 'summary') setSummary(value);
+                  else if (field === 'body') setBody(value);
+                  else if (field === 'slug') setSlug(value);
+                  else if (field === 'seoTitle') setSeoTitle(value);
+                  else if (field === 'seoDescription') setSeoDescription(value);
+                  else if (field === 'topics') setTopics(value);
+                }}
+              />
+            )}
+
 
             {/* STORY TAB */}
             {activeTab === 'story' && (

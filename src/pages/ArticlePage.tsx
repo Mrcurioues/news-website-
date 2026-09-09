@@ -118,10 +118,56 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({ idSlug }) => {
 
   useEffect(() => {
     if (article) {
+      const pageTitle = `${getArticleTitle(article, lang)} - ${t.appName}`;
+      const pageDesc = getArticleExcerpt(article, lang);
       updateMetadata({
-        title: `${getArticleTitle(article, lang)} - ${t.appName}`,
-        description: getArticleExcerpt(article, lang)
+        title: pageTitle,
+        description: pageDesc
       });
+
+      // Inject NewsArticle JSON-LD Schema dynamically into head
+      const schemaId = 'news-article-jsonld-schema';
+      let scriptEl = document.getElementById(schemaId) as HTMLScriptElement | null;
+      if (!scriptEl) {
+        scriptEl = document.createElement('script');
+        scriptEl.id = schemaId;
+        scriptEl.type = 'application/ld+json';
+        document.head.appendChild(scriptEl);
+      }
+
+      const jsonLd = {
+        "@context": "https://schema.org",
+        "@type": "NewsArticle",
+        "headline": pageTitle,
+        "description": pageDesc,
+        "image": [article.coverImage],
+        "datePublished": article.publishedAt,
+        "dateModified": article.updatedAt || article.publishedAt,
+        "author": [{
+          "@type": "Person",
+          "name": article.author?.name || 'Staff Reporter'
+        }],
+        "publisher": {
+          "@type": "NewsMediaOrganization",
+          "name": "Bharat News Portal",
+          "url": "https://bharatnews.in",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://bharatnews.in/logo.png"
+          }
+        },
+        "mainEntityOfPage": {
+          "@type": "WebPage",
+          "@id": `https://bharatnews.in/news/${article.slug || article.id}`
+        }
+      };
+
+      scriptEl.textContent = JSON.stringify(jsonLd);
+
+      return () => {
+        const el = document.getElementById(schemaId);
+        if (el) el.remove();
+      };
     }
   }, [article, lang, updateMetadata]);
 
