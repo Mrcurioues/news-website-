@@ -52,6 +52,12 @@ export interface StorySource {
   url: string;
 }
 
+export interface FaqItem {
+  id: string;
+  question: string;
+  answer: string;
+}
+
 export interface Story {
   id: string;
   type: StoryType;
@@ -113,6 +119,7 @@ export interface Story {
   videoUrl?: string;
   pushNotification?: boolean;
   newsletterInclude?: boolean;
+  faqs?: FaqItem[];
 }
 
 export interface MediaItem {

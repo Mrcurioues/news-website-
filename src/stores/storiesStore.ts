@@ -88,6 +88,7 @@ export const useStoriesStore = create<StoriesState>()(
             video_url: newStory.videoUrl || '',
             location: newStory.location || 'NEW DELHI',
             slug: newStory.slug || `draft-${newStory.id.slice(0, 8)}`,
+            faqs: newStory.faqs || [],
             created_at: now,
             updated_at: now,
           };
@@ -142,6 +143,7 @@ export const useStoriesStore = create<StoriesState>()(
             video_url: updates.videoUrl !== undefined ? updates.videoUrl : currentStory?.videoUrl ?? '',
             location: updates.location ?? currentStory?.location ?? 'NEW DELHI',
             slug: updates.slug ?? currentStory?.slug ?? `draft-${id.slice(0, 8)}`,
+            faqs: updates.faqs ?? currentStory?.faqs ?? [],
             updated_at: now,
           };
           const targetSchedDate = updates.scheduledDate !== undefined ? updates.scheduledDate : currentStory?.scheduledDate;
@@ -300,6 +302,7 @@ export const useStoriesStore = create<StoriesState>()(
             createdAt: d.created_at,
             updatedAt: d.updated_at,
             slug: d.slug,
+            faqs: Array.isArray(d.faqs) ? d.faqs : [],
           }));
 
           const dbIds = new Set(mapped.map((s) => s.id));
@@ -350,6 +353,7 @@ export const useStoriesStore = create<StoriesState>()(
                   createdAt: d.created_at,
                   updatedAt: d.updated_at,
                   slug: d.slug,
+                  faqs: Array.isArray(d.faqs) ? d.faqs : [],
                 };
 
                 set((state) => {

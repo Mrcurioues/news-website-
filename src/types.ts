@@ -53,6 +53,7 @@ export interface Article {
   isFeatured?: boolean;
   views: number;
   videoUrl?: string;
+  faqs?: { id: string; question: string; answer: string }[];
   // WordPress Article Management fields
   status?: PostStatus;
   scheduledDate?: string;

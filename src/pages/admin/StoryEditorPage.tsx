@@ -107,6 +107,17 @@ export const StoryEditorPage: React.FC<StoryEditorPageProps> = ({ storyId, onNav
   const [seoDescriptionBn, setSeoDescriptionBn] = useState(existingStory?.seoDescriptionBn || '');
 
   const [slug, setSlug] = useState(existingStory?.slug || '');
+  const [faqs, setFaqs] = useState<{ id: string; question: string; answer: string }[]>(
+    existingStory?.faqs && existingStory.faqs.length > 0
+      ? existingStory.faqs
+      : [
+          { id: 'faq-1', question: 'What is the main summary of this news report?', answer: 'Read full verified details in the headline article above.' },
+          { id: 'faq-2', question: 'Who reported this story and verified the sources?', answer: 'Reported by Staff Journalists with verified primary source citations.' },
+          { id: 'faq-3', question: 'When was this news published and updated?', answer: 'Published live on Bharat News Portal with real-time developments.' },
+          { id: 'faq-4', question: 'Where can I find related news updates on this topic?', answer: 'Check the category section on Bharat News Portal.' },
+          { id: 'faq-5', question: 'How can readers share or react to this news report?', answer: 'Use the social share buttons below to share on WhatsApp or Twitter.' }
+        ]
+  );
 
 
   const [topicInput, setTopicInput] = useState('');
@@ -476,7 +487,9 @@ export const StoryEditorPage: React.FC<StoryEditorPageProps> = ({ storyId, onNav
         seoDescriptionHi,
         seoDescriptionBn,
         location,
-        slug
+        slug,
+        faqs,
+        videoUrl
       });
       setStatus(targetStatus);
       if (finalScheduledDate) setScheduledDateVal(finalScheduledDate);
@@ -528,7 +541,9 @@ export const StoryEditorPage: React.FC<StoryEditorPageProps> = ({ storyId, onNav
         comments: 0,
         sources: [],
         relatedStoryIds: [],
-        slug
+        slug,
+        faqs,
+        videoUrl
       });
       setId(created.id);
       setStatus(targetStatus);
@@ -1140,43 +1155,83 @@ export const StoryEditorPage: React.FC<StoryEditorPageProps> = ({ storyId, onNav
               {body.trim().split(/\s+/).filter(Boolean).length} words · {Math.ceil(body.trim().split(/\s+/).filter(Boolean).length / 200)} min read
             </div>
 
-            {/* DEDICATED FAQ SECTION (5 QUESTIONS & ANSWERS) BELOW EDITOR */}
+            {/* DEDICATED CUSTOMIZABLE FAQ MANAGER SECTION BELOW EDITOR */}
             <div className="bg-white rounded-2xl border border-emerald-200 p-6 shadow-sm space-y-4">
-              <div className="flex items-center justify-between border-b border-emerald-100 pb-3">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-emerald-100 pb-3 gap-2">
                 <div className="flex items-center gap-2">
                   <span className="p-2 bg-emerald-100 text-emerald-800 rounded-xl font-bold">❓</span>
                   <div>
-                    <h3 className="font-bold text-gray-900 text-base">Frequently Asked Questions (FAQ) Section</h3>
-                    <p className="text-xs text-gray-500">Add 5 Q&As to boost Google Rich Snippet Search Rankings</p>
+                    <h3 className="font-bold text-gray-900 text-base">Custom FAQ Manager ({faqs.length} Questions)</h3>
+                    <p className="text-xs text-gray-500">Edit, add, or update custom Q&A items — auto-synced to Supabase & Website</p>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => {
-                    const faqHtml = `<div class="my-6 border border-emerald-200 bg-emerald-50/60 p-5 rounded-2xl space-y-4"><h3 class="text-lg font-bold text-emerald-950 flex items-center gap-2">❓ Frequently Asked Questions (FAQ)</h3><div class="space-y-3"><div class="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-2xs"><h4 class="font-bold text-sm text-gray-900">Q1: ${headline || 'What is this article about?'}</h4><p class="text-xs text-gray-600 mt-1">A: ${summary || 'Read full details in the main news coverage above.'}</p></div><div class="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-2xs"><h4 class="font-bold text-sm text-gray-900">Q2: Who reported this story?</h4><p class="text-xs text-gray-600 mt-1">A: Reported by ${byline || 'Staff Reporter'} for Bharat News Portal.</p></div><div class="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-2xs"><h4 class="font-bold text-sm text-gray-900">Q3: When was this news published?</h4><p class="text-xs text-gray-600 mt-1">A: Published live with real-time updates.</p></div><div class="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-2xs"><h4 class="font-bold text-sm text-gray-900">Q4: Where can I check official updates?</h4><p class="text-xs text-gray-600 mt-1">A: Check the ${section} section on Bharat News Portal.</p></div><div class="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-2xs"><h4 class="font-bold text-sm text-gray-900">Q5: How to share this news?</h4><p class="text-xs text-gray-600 mt-1">A: Use the share links below to send on WhatsApp and X (Twitter).</p></div></div></div>`;
-                    insertVisualHtml(faqHtml);
-                    toast.success('✨ 5 Q&A FAQ Section inserted into article body!');
+                    const newFaq = {
+                      id: `faq-${Date.now()}`,
+                      question: `Question ${faqs.length + 1}: Type custom question here?`,
+                      answer: 'Type detailed answer explanation here...'
+                    };
+                    setFaqs([...faqs, newFaq]);
+                    toast.success('New FAQ Question added! Type your custom text below.');
                   }}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition-colors shadow-xs cursor-pointer flex items-center gap-1.5"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition-colors shadow-xs cursor-pointer flex items-center gap-1.5 shrink-0"
                 >
-                  + Insert 5 Q&A FAQ Block into Article
+                  <Plus className="w-4 h-4" /> Add Custom Question
                 </button>
               </div>
 
-              <div className="space-y-3">
-                {[
-                  { q: `Q1: ${headline || 'What are the main details of this story?'}`, a: summary || 'Main summary explanation...' },
-                  { q: `Q2: Who is the reporter or authority behind this release?`, a: `Reported by ${byline || 'Staff Reporter'} with primary source verification.` },
-                  { q: `Q3: When was this story published and updated?`, a: `Published live on Bharat News Portal.` },
-                  { q: `Q4: Where to find related news updates?`, a: `Available in the ${section} category section.` },
-                  { q: `Q5: How can readers react or share this report?`, a: `Share via social icons or leave a comment below.` },
-                ].map((faq, idx) => (
-                  <div key={idx} className="bg-gray-50 border border-gray-200 rounded-xl p-3.5 space-y-1">
-                    <div className="font-bold text-xs text-emerald-950 flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-                      {faq.q}
+              {/* Editable FAQ Cards */}
+              <div className="space-y-4">
+                {faqs.map((faq, idx) => (
+                  <div key={faq.id || idx} className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-3 relative group">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">
+                        Question #{idx + 1}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFaqs(faqs.filter(f => f.id !== faq.id));
+                          toast.success(`Deleted Question #${idx + 1}`);
+                        }}
+                        className="text-gray-400 hover:text-rose-600 p-1 rounded-md hover:bg-white transition-colors cursor-pointer"
+                        title="Remove Question"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
                     </div>
-                    <div className="text-xs text-gray-600 pl-3.5">{faq.a}</div>
+
+                    <div className="space-y-2">
+                      <div>
+                        <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">Question Text</label>
+                        <input
+                          type="text"
+                          value={faq.question}
+                          onChange={e => {
+                            const val = e.target.value;
+                            setFaqs(faqs.map(f => f.id === faq.id ? { ...f, question: val } : f));
+                          }}
+                          placeholder="Type custom question..."
+                          className="w-full text-xs font-semibold p-2.5 bg-white border border-gray-200 rounded-lg outline-none focus:border-emerald-500 text-gray-900"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">Answer Text</label>
+                        <textarea
+                          rows={2}
+                          value={faq.answer}
+                          onChange={e => {
+                            const val = e.target.value;
+                            setFaqs(faqs.map(f => f.id === faq.id ? { ...f, answer: val } : f));
+                          }}
+                          placeholder="Type custom answer explanation..."
+                          className="w-full text-xs p-2.5 bg-white border border-gray-200 rounded-lg outline-none focus:border-emerald-500 text-gray-700 resize-none"
+                        />
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
