@@ -1139,6 +1139,48 @@ export const StoryEditorPage: React.FC<StoryEditorPageProps> = ({ storyId, onNav
             <div className="text-xs text-gray-400 text-right">
               {body.trim().split(/\s+/).filter(Boolean).length} words · {Math.ceil(body.trim().split(/\s+/).filter(Boolean).length / 200)} min read
             </div>
+
+            {/* DEDICATED FAQ SECTION (5 QUESTIONS & ANSWERS) BELOW EDITOR */}
+            <div className="bg-white rounded-2xl border border-emerald-200 p-6 shadow-sm space-y-4">
+              <div className="flex items-center justify-between border-b border-emerald-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="p-2 bg-emerald-100 text-emerald-800 rounded-xl font-bold">❓</span>
+                  <div>
+                    <h3 className="font-bold text-gray-900 text-base">Frequently Asked Questions (FAQ) Section</h3>
+                    <p className="text-xs text-gray-500">Add 5 Q&As to boost Google Rich Snippet Search Rankings</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const faqHtml = `<div class="my-6 border border-emerald-200 bg-emerald-50/60 p-5 rounded-2xl space-y-4"><h3 class="text-lg font-bold text-emerald-950 flex items-center gap-2">❓ Frequently Asked Questions (FAQ)</h3><div class="space-y-3"><div class="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-2xs"><h4 class="font-bold text-sm text-gray-900">Q1: ${headline || 'What is this article about?'}</h4><p class="text-xs text-gray-600 mt-1">A: ${summary || 'Read full details in the main news coverage above.'}</p></div><div class="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-2xs"><h4 class="font-bold text-sm text-gray-900">Q2: Who reported this story?</h4><p class="text-xs text-gray-600 mt-1">A: Reported by ${byline || 'Staff Reporter'} for Bharat News Portal.</p></div><div class="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-2xs"><h4 class="font-bold text-sm text-gray-900">Q3: When was this news published?</h4><p class="text-xs text-gray-600 mt-1">A: Published live with real-time updates.</p></div><div class="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-2xs"><h4 class="font-bold text-sm text-gray-900">Q4: Where can I check official updates?</h4><p class="text-xs text-gray-600 mt-1">A: Check the ${section} section on Bharat News Portal.</p></div><div class="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-2xs"><h4 class="font-bold text-sm text-gray-900">Q5: How to share this news?</h4><p class="text-xs text-gray-600 mt-1">A: Use the share links below to send on WhatsApp and X (Twitter).</p></div></div></div>`;
+                    insertVisualHtml(faqHtml);
+                    toast.success('✨ 5 Q&A FAQ Section inserted into article body!');
+                  }}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition-colors shadow-xs cursor-pointer flex items-center gap-1.5"
+                >
+                  + Insert 5 Q&A FAQ Block into Article
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {[
+                  { q: `Q1: ${headline || 'What are the main details of this story?'}`, a: summary || 'Main summary explanation...' },
+                  { q: `Q2: Who is the reporter or authority behind this release?`, a: `Reported by ${byline || 'Staff Reporter'} with primary source verification.` },
+                  { q: `Q3: When was this story published and updated?`, a: `Published live on Bharat News Portal.` },
+                  { q: `Q4: Where to find related news updates?`, a: `Available in the ${section} category section.` },
+                  { q: `Q5: How can readers react or share this report?`, a: `Share via social icons or leave a comment below.` },
+                ].map((faq, idx) => (
+                  <div key={idx} className="bg-gray-50 border border-gray-200 rounded-xl p-3.5 space-y-1">
+                    <div className="font-bold text-xs text-emerald-950 flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                      {faq.q}
+                    </div>
+                    <div className="text-xs text-gray-600 pl-3.5">{faq.a}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
