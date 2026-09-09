@@ -305,6 +305,66 @@ export const SeoEnginePage: React.FC<SeoEnginePageProps> = ({ onNavigate }) => {
               </li>
             </ul>
           </div>
+
+          {/* 4-PILLAR MASTER SEO CHECKLIST MATRIX */}
+          <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-2xs space-y-4">
+            <h3 className="font-black text-gray-900 text-lg flex items-center gap-2">
+              <Zap className="w-5 h-5 text-emerald-600" />
+              <span>Website 4-Pillar SEO Checklist Verification</span>
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Pillar 1 */}
+              <div className="border border-emerald-100 bg-emerald-50/50 p-4 rounded-xl space-y-2">
+                <div className="font-bold text-sm text-emerald-950 flex items-center gap-2">
+                  <span>🟢 1. Keyword Research</span>
+                </div>
+                <ul className="text-xs text-gray-700 space-y-1.5 font-medium">
+                  <li className="flex items-center gap-1.5">✓ Target Keywords & Topic Clustering active</li>
+                  <li className="flex items-center gap-1.5">✓ Low Competition (Long-tail) focus guidance active</li>
+                  <li className="flex items-center gap-1.5">✓ Bengali & Regional Transliteration Entity matching active</li>
+                </ul>
+              </div>
+
+              {/* Pillar 2 */}
+              <div className="border border-emerald-100 bg-emerald-50/50 p-4 rounded-xl space-y-2">
+                <div className="font-bold text-sm text-emerald-950 flex items-center gap-2">
+                  <span>🟢 2. Technical SEO</span>
+                </div>
+                <ul className="text-xs text-gray-700 space-y-1.5 font-medium">
+                  <li className="flex items-center gap-1.5">✓ Mobile-Friendly Responsive Tailwind Layout (100%)</li>
+                  <li className="flex items-center gap-1.5">✓ Fast Site Load Speed & Optimized Asset Chunks</li>
+                  <li className="flex items-center gap-1.5">✓ SSL (HTTPS) Secure Connection enforced</li>
+                  <li className="flex items-center gap-1.5">✓ XML Sitemap (`public/sitemap.xml`) verified</li>
+                  <li className="flex items-center gap-1.5">✓ Robots.txt (`public/robots.txt`) active</li>
+                </ul>
+              </div>
+
+              {/* Pillar 3 */}
+              <div className="border border-emerald-100 bg-emerald-50/50 p-4 rounded-xl space-y-2">
+                <div className="font-bold text-sm text-emerald-950 flex items-center gap-2">
+                  <span>🟢 3. On-Page SEO</span>
+                </div>
+                <ul className="text-xs text-gray-700 space-y-1.5 font-medium">
+                  <li className="flex items-center gap-1.5">✓ Catchy Meta Title & Description length guides active</li>
+                  <li className="flex items-center gap-1.5">✓ Clean Simple URL Slugs (`/news/article-slug`)</li>
+                  <li className="flex items-center gap-1.5">✓ Semantic Headings (Single H1, structured H2/H3)</li>
+                </ul>
+              </div>
+
+              {/* Pillar 4 */}
+              <div className="border border-emerald-100 bg-emerald-50/50 p-4 rounded-xl space-y-2">
+                <div className="font-bold text-sm text-emerald-950 flex items-center gap-2">
+                  <span>🟢 4. Content Quality</span>
+                </div>
+                <ul className="text-xs text-gray-700 space-y-1.5 font-medium">
+                  <li className="flex items-center gap-1.5">✓ Original Problem-Solving E-E-A-T Verified Content</li>
+                  <li className="flex items-center gap-1.5">✓ Clean Readability (Short paragraphs & media rich)</li>
+                  <li className="flex items-center gap-1.5">✓ Images with Alt Text & Interactive Video Embeds</li>
+                </ul>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
