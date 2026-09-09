@@ -111,8 +111,9 @@ export class SeoAnalyzer {
     }
 
     // Clean Slug
-    const isCleanSlug = /^[a-z0-9-]+$/.test(slug);
-    if (!slug) {
+    const effectiveSlug = (slug || headline || '').toLowerCase().trim().replace(/[^a-z0-9\u0900-\u097F\u0980-\u09FF]+/g, '-').replace(/(^-|-$)/g, '');
+    const isCleanSlug = effectiveSlug.length > 0;
+    if (!slug && !headline) {
       checks.push({
         id: 'slug_missing',
         category: 'technical',
@@ -123,17 +124,6 @@ export class SeoAnalyzer {
         recommendation: 'Create a clean, hyphenated URL slug.',
         passed: false
       });
-    } else if (!isCleanSlug) {
-      checks.push({
-        id: 'slug_formatting',
-        category: 'technical',
-        severity: 'warning',
-        points: 2,
-        maxPoints: 5,
-        message: 'URL slug contains uppercase letters or special characters.',
-        recommendation: 'Use lowercase letters, numbers, and hyphens only.',
-        passed: false
-      });
     } else {
       checks.push({
         id: 'slug_ok',
@@ -141,7 +131,7 @@ export class SeoAnalyzer {
         severity: 'passed',
         points: 5,
         maxPoints: 5,
-        message: 'URL slug is clean and SEO friendly.',
+        message: `URL slug is active: "/news/${effectiveSlug || 'article'}"`,
         passed: true
       });
     }

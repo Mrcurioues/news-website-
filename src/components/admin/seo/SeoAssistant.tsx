@@ -111,6 +111,30 @@ export const SeoAssistant: React.FC<SeoAssistantProps> = ({
         </div>
 
         <div>
+          <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1 flex items-center justify-between">
+            <span>URL Slug</span>
+            <button
+              type="button"
+              onClick={() => {
+                const autoSlug = (story.headline || 'news-story').toLowerCase().trim().replace(/[^a-z0-9\u0900-\u097F\u0980-\u09FF]+/g, '-').replace(/(^-|-$)/g, '');
+                onUpdateField('slug', autoSlug);
+                toast.success('Auto-generated clean URL slug!');
+              }}
+              className="text-[10px] font-bold text-emerald-700 hover:underline cursor-pointer"
+            >
+              ⚡ Auto-Generate
+            </button>
+          </label>
+          <input
+            type="text"
+            placeholder="e.g. kolkata-election-updates..."
+            value={story.slug || ''}
+            onChange={e => onUpdateField('slug', e.target.value.toLowerCase().replace(/[^a-z0-9\u0900-\u097F\u0980-\u09FF-]/g, '-'))}
+            className="w-full text-xs p-2.5 border border-gray-200 rounded-lg outline-none focus:border-emerald-500 bg-gray-50 font-mono"
+          />
+        </div>
+
+        <div>
           <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
             Meta Description ({story.summary?.length || 0} chars)
           </label>
