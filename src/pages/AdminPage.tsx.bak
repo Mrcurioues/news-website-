@@ -1,0 +1,324 @@
+import React, { useState, useEffect } from 'react';
+import { getAllArticles, CATEGORIES, addArticle, updateArticle, deleteArticle } from '../data/demo';
+import { useRouter, Link } from '../context/RouterContext';
+import { Article, PostStatus } from '../types';
+import { ADMIN_TRANSLATIONS } from '../utils/adminTranslations';
+import {
+  LayoutDashboard,
+  FileText,
+  Image as ImageIcon,
+  LayoutTemplate,
+  Users,
+  BarChart2,
+  Settings,
+  Search,
+  ExternalLink,
+  Bell,
+  Plus,
+  Edit3,
+  Eye,
+  Trash2,
+  X,
+  Bot
+} from 'lucide-react';
+import { WpArticleEditor } from '../components/admin/WpArticleEditor';
+import { WpAssistantChat } from '../components/admin/WpAssistantChat';
+import { DeleteConfirmModal } from '../components/admin/DeleteConfirmModal';
+
+export const AdminPage: React.FC = () => {
+  const { updateMetadata, push, lang } = useRouter();
+  const adminT = ADMIN_TRANSLATIONS[lang] || ADMIN_TRANSLATIONS.hi;
+  
+  const [articles, setArticles] = useState<Article[]>(() => getAllArticles());
+  const [activeTab, setActiveTab] = useState<'suite' | 'list' | 'editor' | 'assistant'>('list');
+  const [editingArticle, setEditingArticle] = useState<Partial<Article> | undefined>(undefined);
+
+  // Deletion Modal state
+  const [deleteModalState, setDeleteModalState] = useState<{
+    isOpen: boolean;
+    articleId: string;
+    articleTitle: string;
+  }>({
+    isOpen: false,
+    articleId: '',
+    articleTitle: ''
+  });
+
+  const [isAssistantDrawerOpen, setIsAssistantDrawerOpen] = useState(false);
+
+  useEffect(() => {
+    updateMetadata({
+      title: 'Newsroom - Content Management',
+      description: 'Newsroom CMS'
+    });
+  }, [lang]);
+
+  const refreshArticles = () => setArticles([...getAllArticles()]);
+
+  const handleCreateNewArticle = () => {
+    setEditingArticle({
+      title: '',
+      titleEn: '',
+      categorySlug: 'national',
+      excerpt: '',
+      body: [],
+      coverImage: '',
+      status: 'draft',
+      tags: []
+    });
+    setActiveTab('editor');
+  };
+
+  const handleEditArticle = (article: Article) => {
+    setEditingArticle({ ...article });
+    setActiveTab('editor');
+  };
+
+  const handleSaveArticle = (articleData: Partial<Article>) => {
+    if (articleData.id) {
+      updateArticle(articleData.id, articleData);
+    } else {
+      addArticle(articleData);
+    }
+    refreshArticles();
+    setActiveTab('list');
+  };
+
+  const handleRequestDelete = (id: string, title: string) => {
+    setDeleteModalState({
+      isOpen: true,
+      articleId: id,
+      articleTitle: title
+    });
+  };
+
+  const handleConfirmDelete = () => {
+    if (deleteModalState.articleId) {
+      deleteArticle(deleteModalState.articleId);
+      refreshArticles();
+      if (editingArticle?.id === deleteModalState.articleId) {
+        setEditingArticle(undefined);
+        setActiveTab('list');
+      }
+    }
+    setDeleteModalState({ isOpen: false, articleId: '', articleTitle: '' });
+  };
+
+  const breakingCount = articles.filter(a => a.isBreaking).length;
+  const draftCount = articles.filter(a => a.status === 'draft').length;
+  const scheduledCount = articles.filter(a => a.status === 'scheduled').length;
+  const publishedCount = articles.filter(a => a.status === 'published').length;
+
+  return (
+    <div className="flex h-screen overflow-hidden text-gray-800 bg-[#F8F9FA] antialiased">
+      {/* LEFT SIDEBAR */}
+      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col hidden md:flex shrink-0">
+        <div className="h-16 flex items-center px-6 border-b border-gray-200">
+          <span className="text-xl font-bold tracking-tight text-gray-900">Newsroom</span>
+        </div>
+        
+        <nav className="flex-1 overflow-y-auto py-4 hide-scrollbar">
+          <div className="px-4 mb-6">
+            <button onClick={() => setActiveTab('list')} className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors font-medium cursor-pointer ${activeTab !== 'editor' ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50'}`}>
+              <LayoutDashboard className="w-5 h-5" /> Dashboard
+            </button>
+          </div>
+
+          <div className="px-4 mb-6">
+            <h3 className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Stories</h3>
+            <button onClick={() => setActiveTab('list')} className="w-full flex items-center gap-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer">
+              <FileText className="w-5 h-5" /> All Stories
+            </button>
+            <button className="w-full flex items-center gap-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer">
+              <span className="w-5"></span> Drafts
+            </button>
+            <button className="w-full flex items-center justify-between px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer">
+              <div className="flex items-center gap-3"><span className="w-5"></span> In Review</div>
+              <span className="bg-blue-100 text-blue-700 py-0.5 px-2 rounded-full text-xs font-medium">3</span>
+            </button>
+            <button className="w-full flex items-center gap-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer">
+              <span className="w-5"></span> Scheduled
+            </button>
+          </div>
+
+          <div className="px-4 space-y-1">
+            <button className="w-full flex items-center gap-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors font-medium cursor-pointer"><ImageIcon className="w-5 h-5" /> Media</button>
+            <button className="w-full flex items-center gap-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors font-medium cursor-pointer"><LayoutTemplate className="w-5 h-5" /> Homepage</button>
+            <button className="w-full flex items-center gap-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors font-medium cursor-pointer"><Users className="w-5 h-5" /> Audience</button>
+            <button className="w-full flex items-center gap-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors font-medium cursor-pointer"><BarChart2 className="w-5 h-5" /> Analytics</button>
+            <button className="w-full flex items-center gap-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors font-medium mt-4 cursor-pointer"><Settings className="w-5 h-5" /> Settings</button>
+          </div>
+        </nav>
+        
+        <div className="p-4 border-t border-gray-200">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-sm font-semibold">AS</div>
+            <div className="text-sm">
+              <div className="font-medium">Amit Sharma</div>
+              <div className="text-gray-500 text-xs">Editor</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* MAIN CONTENT AREA */}
+      <main className="flex-1 flex flex-col h-full relative">
+        {activeTab !== 'editor' && (
+          <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 shrink-0">
+            <div className="relative w-96 hidden md:block">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input type="text" placeholder="Search stories, media..." className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-transparent focus:bg-white focus:border-gray-300 rounded-lg text-sm transition-all outline-none" />
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <Link href="/" className="text-sm font-medium text-gray-600 hover:text-gray-900 flex items-center gap-1 cursor-pointer">
+                <ExternalLink className="w-4 h-4" /> View Site
+              </Link>
+              <button className="relative p-2 text-gray-500 hover:text-gray-900 rounded-full hover:bg-gray-100 cursor-pointer">
+                <Bell className="w-5 h-5" />
+                <span className="absolute top-1.5 right-2 w-2 h-2 bg-rose-600 rounded-full"></span>
+              </button>
+              <button onClick={handleCreateNewArticle} className="bg-gray-900 text-white px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 hover:bg-gray-800 transition-colors cursor-pointer">
+                <Plus className="w-4 h-4" /> Write Story
+              </button>
+            </div>
+          </header>
+        )}
+
+        {/* EDITOR VIEW */}
+        {activeTab === 'editor' && (
+          <WpArticleEditor
+            initialArticle={editingArticle}
+            onSave={handleSaveArticle}
+            onDeleteRequest={handleRequestDelete}
+            onOpenAssistant={() => setIsAssistantDrawerOpen(true)}
+            onCancel={() => setActiveTab('list')}
+          />
+        )}
+
+        {/* DASHBOARD LIST VIEW */}
+        {activeTab === 'list' && (
+          <div className="flex-1 overflow-y-auto p-6 md:p-10">
+            <div className="max-w-6xl mx-auto space-y-8">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 mb-1">Good afternoon 👋</h1>
+                <p className="text-gray-500">3 stories need your attention in the queue.</p>
+              </div>
+
+              {/* Status Summary */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+                  <div className="text-3xl font-bold text-gray-900 mb-1">{publishedCount}</div>
+                  <div className="text-sm font-medium text-gray-500 uppercase tracking-wide">Published Today</div>
+                </div>
+                <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+                  <div className="text-3xl font-bold text-gray-900 mb-1">3</div>
+                  <div className="text-sm font-medium text-gray-500 uppercase tracking-wide">Needs Review</div>
+                </div>
+                <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+                  <div className="text-3xl font-bold text-gray-900 mb-1">{scheduledCount}</div>
+                  <div className="text-sm font-medium text-gray-500 uppercase tracking-wide">Scheduled</div>
+                </div>
+                <div className="bg-rose-50 rounded-xl p-5 border border-rose-100 shadow-sm relative overflow-hidden">
+                  <div className="absolute -right-4 -top-4 bg-rose-100 w-16 h-16 rounded-full opacity-50 blur-xl"></div>
+                  <div className="text-3xl font-bold text-rose-600 mb-1 flex items-center gap-2">
+                    {breakingCount} <span className="text-[10px] bg-rose-600 text-white px-1.5 py-0.5 rounded uppercase tracking-wider font-bold animate-pulse">Live</span>
+                  </div>
+                  <div className="text-sm font-medium text-rose-600 uppercase tracking-wide">Breaking News</div>
+                </div>
+              </div>
+
+              {/* Today's Editorial Queue */}
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-200">
+                  <h2 className="text-lg font-bold text-gray-900">Today's Editorial Queue</h2>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm whitespace-nowrap">
+                    <thead className="bg-gray-50 text-gray-500 font-medium">
+                      <tr>
+                        <th className="px-6 py-3">Story</th>
+                        <th className="px-6 py-3">Author</th>
+                        <th className="px-6 py-3">Status</th>
+                        <th className="px-6 py-3">Deadline</th>
+                        <th className="px-6 py-3 text-right">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {articles.map((item) => (
+                        <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-6 py-4">
+                            <div className="font-medium text-gray-900 truncate max-w-[300px]">
+                              {item.titleEn || item.title}
+                            </div>
+                            <div className="text-gray-500 text-xs mt-0.5">{item.categorySlug.toUpperCase()}</div>
+                          </td>
+                          <td className="px-6 py-4 text-gray-600">Amit Sharma</td>
+                          <td className="px-6 py-4">
+                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                              item.status === 'published' ? 'bg-green-100 text-green-700' :
+                              item.status === 'draft' ? 'bg-gray-100 text-gray-700' :
+                              item.status === 'scheduled' ? 'bg-purple-100 text-purple-700' :
+                              'bg-blue-100 text-blue-700'
+                            }`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${
+                                item.status === 'published' ? 'bg-green-600' :
+                                item.status === 'draft' ? 'bg-gray-500' :
+                                item.status === 'scheduled' ? 'bg-purple-600' :
+                                'bg-blue-600'
+                              }`}></span>
+                              {(item.status || 'draft').charAt(0).toUpperCase() + (item.status || 'draft').slice(1)}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-gray-500">Today, 2:00 PM</td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <button onClick={() => handleEditArticle(item)} className="p-2 rounded-lg text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-colors cursor-pointer">
+                                <Edit3 className="w-4 h-4" />
+                              </button>
+                              <button onClick={() => handleRequestDelete(item.id, item.title)} className="p-2 rounded-lg text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer">
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* Floating Assistant Drawer Modal */}
+      {isAssistantDrawerOpen && (
+        <div className="fixed bottom-4 right-4 w-[400px] z-50 bg-white shadow-2xl rounded-2xl border border-gray-200 flex flex-col">
+          <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50 rounded-t-2xl">
+            <div className="flex items-center gap-2">
+              <Bot className="w-5 h-5 text-purple-600" />
+              <span className="font-semibold text-gray-900">AI Assistant</span>
+            </div>
+            <button onClick={() => setIsAssistantDrawerOpen(false)} className="text-gray-400 hover:text-gray-900 cursor-pointer">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="p-6 h-[400px] flex items-center justify-center text-gray-500 text-sm italic text-center">
+            AI Assistant is active. You can prompt it for summaries, title generation, and proofreading.
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation */}
+      <DeleteConfirmModal
+        isOpen={deleteModalState.isOpen}
+        articleTitle={deleteModalState.articleTitle}
+        articleId={deleteModalState.articleId}
+        lang={lang}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeleteModalState({ isOpen: false, articleId: '', articleTitle: '' })}
+      />
+    </div>
+  );
+};

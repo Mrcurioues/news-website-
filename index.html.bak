@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="hi">
+  <head>
+    <script>
+      (function() {
+        try {
+          var win = typeof window !== 'undefined' ? window : globalThis;
+          if (win) {
+            var origFetch = typeof win.fetch === 'function' ? win.fetch.bind(win) : null;
+            var currentFetch = origFetch;
+            Object.defineProperty(win, 'fetch', {
+              get: function() {
+                return currentFetch;
+              },
+              set: function(val) {
+                currentFetch = typeof val === 'function' ? val : origFetch;
+              },
+              configurable: true,
+              enumerable: true
+            });
+            if (typeof Window !== 'undefined' && Window.prototype) {
+              try {
+                var desc = Object.getOwnPropertyDescriptor(Window.prototype, 'fetch');
+                if (desc && !desc.set && desc.configurable) {
+                  Object.defineProperty(Window.prototype, 'fetch', {
+                    get: function() {
+                      return currentFetch;
+                    },
+                    set: function(val) {
+                      currentFetch = typeof val === 'function' ? val : origFetch;
+                    },
+                    configurable: true,
+                    enumerable: true
+                  });
+                }
+              } catch (e) {}
+            }
+          }
+        } catch (err) {
+          // Ignore
+        }
+      })();
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>भारत समाचार लाइव | Bharat Samachar Live - Latest Hindi News</title>
+    <meta name="description" content="भारत और दुनिया की ताज़ा ख़बरें, राजनीति, क्रिकेट, मनोरंजन, व्यापार और वीडियो - Bharat Samachar Live." />
+    <meta property="og:title" content="भारत समाचार लाइव | Bharat Samachar Live" />
+    <meta property="og:description" content="भारत और दुनिया की ताज़ा ख़बरें, ब्रेकिंग न्यूज़, लाइव अपडेट्स और विश्लेषण।" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  </head>
+  <body class="bg-gray-100 text-gray-900 antialiased font-sans">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

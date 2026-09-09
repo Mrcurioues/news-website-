@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Manipulation Canvas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: #e5e7eb;
+      color: #1f2937;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+
+    /* TOP TOOLBAR */
+    .toolbar {
+      height: 60px;
+      background: #ffffff;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 100;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+      flex-shrink: 0;
+    }
+
+    .toolbar-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 16px;
+      color: #111827;
+    }
+
+    .toolbar-title svg {
+      width: 24px;
+      height: 24px;
+      color: #3498db;
+    }
+
+    .controls-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      background-color: #ffffff;
+      color: #374151;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .btn:hover {
+      background-color: #f9fafb;
+      border-color: #9ca3af;
+      color: #111827;
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      border-color: #e5e7eb;
+    }
+
+    .btn-primary {
+      background-color: #3498db;
+      border-color: #2980b9;
+      color: #ffffff;
+    }
+
+    .btn-primary:hover {
+      background-color: #2980b9;
+      color: #ffffff;
+    }
+
+    .btn-danger {
+      background-color: #ef4444;
+      border-color: #dc2626;
+      color: #ffffff;
+    }
+
+    .btn-danger:hover {
+      background-color: #dc2626;
+      color: #ffffff;
+    }
+
+    .divider {
+      width: 1px;
+      height: 24px;
+      background-color: #e5e7eb;
+      margin: 0 4px;
+    }
+
+    /* CANVAS AREA */
+    .viewport {
+      flex: 1;
+      overflow: auto;
+      position: relative;
+      background-color: #f0f0f0;
+    }
+
+    .canvas {
+      position: relative;
+      width: 2500px;
+      height: 1800px;
+      background-color: #f0f0f0;
+      background-image: 
+        linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+
+    /* IMAGE ITEM WRAPPER */
+    .canvas-image-wrapper {
+      position: absolute;
+      box-sizing: border-box;
+      touch-action: none;
+      border: 2px solid transparent;
+      cursor: move;
+      transition: box-shadow 0.15s ease;
+    }
+
+    .canvas-image-wrapper img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      pointer-events: none;
+      user-select: none;
+      object-fit: fill;
+    }
+
+    /* SELECTED STATE */
+    .canvas-image-wrapper.selected {
+      border: 2px solid #3498db;
+      box-shadow: 0 4px 12px rgba(52, 152, 219, 0.25);
+    }
+
+    /* RESIZE HANDLES */
+    .handle {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background-color: #ffffff;
+      border: 1.5px solid #3498db;
+      border-radius: 2px;
+      z-index: 30;
+      display: none;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    .canvas-image-wrapper.selected .handle {
+      display: block;
+    }
+
+    /* HANDLE POSITIONS & CURSORS */
+    .handle-nw { top: -6px; left: -6px; cursor: nwse-resize; }
+    .handle-n  { top: -6px; left: calc(50% - 5px); cursor: ns-resize; }
+    .handle-ne { top: -6px; right: -6px; cursor: nesw-resize; }
+    
+    .handle-w  { top: calc(50% - 5px); left: -6px; cursor: ew-resize; }
+    .handle-e  { top: calc(50% - 5px); right: -6px; cursor: ew-resize; }
+    
+    .handle-sw { bottom: -6px; left: -6px; cursor: nesw-resize; }
+    .handle-s  { bottom: -6px; left: calc(50% - 5px); cursor: ns-resize; }
+    .handle-se { bottom: -6px; right: -6px; cursor: nwse-resize; }
+
+    /* EMPTY CANVAS HINT */
+    .empty-state {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      color: #9ca3af;
+      pointer-events: none;
+      z-index: 10;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(4px);
+      padding: 32px 48px;
+      border-radius: 16px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+    }
+
+    .empty-state svg {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 12px;
+      color: #d1d5db;
+    }
+
+    .empty-state h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 4px;
+    }
+
+    .empty-state p {
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP TOOLBAR -->
+  <header class="toolbar">
+    <div class="toolbar-title">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+      Image Canvas
+    </div>
+
+    <div class="controls-group">
+      <!-- Upload Button -->
+      <label class="btn btn-primary">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Upload Image
+        <input type="file" id="fileInput" accept="image/*" multiple hidden>
+      </label>
+
+      <div class="divider"></div>
+
+      <!-- Alignment / Centering Buttons -->
+      <button id="btnCenterH" class="btn" disabled title="Center Horizontally">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h8M8 17h8M12 3v18" />
+        </svg>
+        Center Horizontal
+      </button>
+
+      <button id="btnCenterV" class="btn" disabled title="Center Vertically">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8v8M17 8v8M3 12h18" />
+        </svg>
+        Center Vertical
+      </button>
+
+      <div class="divider"></div>
+
+      <!-- Action Buttons -->
+      <button id="btnDelete" class="btn btn-danger" disabled title="Delete Selected Image (Delete key)">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+        Delete
+      </button>
+    </div>
+  </header>
+
+  <!-- CANVAS WORKSPACE -->
+  <main class="viewport" id="viewport">
+    <div class="canvas" id="canvas"></div>
+
+    <div class="empty-state" id="emptyState">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+      <h3>No Images on Canvas</h3>
+      <p>Click "Upload Image" above to add photos onto the workspace.</p>
+    </div>
+  </main>
+
+  <script>
+    // APP STATE & CONSTANTS
+    const MIN_SIZE = 50;
+    const canvas = document.getElementById('canvas');
+    const viewport = document.getElementById('viewport');
+    const fileInput = document.getElementById('fileInput');
+    const btnCenterH = document.getElementById('btnCenterH');
+    const btnCenterV = document.getElementById('btnCenterV');
+    const btnDelete = document.getElementById('btnDelete');
+    const emptyState = document.getElementById('emptyState');
+
+    let selectedWrapper = null;
+    let imageCounter = 0;
+
+    // Center viewport initially
+    window.addEventListener('load', () => {
+      viewport.scrollLeft = (canvas.clientWidth - viewport.clientWidth) / 2;
+      viewport.scrollTop = (canvas.clientHeight - viewport.clientHeight) / 2;
+    });
+
+    // UPLOAD IMAGES
+    fileInput.addEventListener('change', (e) => {
+      const files = Array.from(e.target.files);
+      if (files.length === 0) return;
+
+      files.forEach((file) => {
+        if (!file.type.startsWith('image/')) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          createImageOnCanvas(event.target.result);
+        };
+        reader.readAsDataURL(file);
+      });
+
+      fileInput.value = '';
+    });
+
+    function createImageOnCanvas(src) {
+      const img = new Image();
+      img.src = src;
+
+      img.onload = () => {
+        imageCounter++;
+        emptyState.style.display = 'none';
+
+        // Initial Dimensions (Max 400px width/height while preserving aspect ratio)
+        let w = img.naturalWidth || 300;
+        let h = img.naturalHeight || 200;
+        const maxInitSize = 400;
+
+        if (w > maxInitSize || h > maxInitSize) {
+          if (w >= h) {
+            h = Math.round((h * maxInitSize) / w);
+            w = maxInitSize;
+          } else {
+            w = Math.round((w * maxInitSize) / h);
+            h = maxInitSize;
+          }
+        }
+
+        // Stagger placement around center of current viewport scroll
+        const scrollLeft = viewport.scrollLeft;
+        const scrollTop = viewport.scrollTop;
+        const viewW = viewport.clientWidth;
+        const viewH = viewport.clientHeight;
+
+        const staggerOffset = (imageCounter % 6) * 30;
+        const left = scrollLeft + (viewW - w) / 2 + staggerOffset;
+        const top = scrollTop + (viewH - h) / 2 + staggerOffset;
+
+        // Create Wrapper DOM
+        const wrapper = document.createElement('div');
+        wrapper.className = 'canvas-image-wrapper';
+        wrapper.style.width = w + 'px';
+        wrapper.style.height = h + 'px';
+        wrapper.style.left = left + 'px';
+        wrapper.style.top = top + 'px';
+
+        // Store intrinsic aspect ratio
+        wrapper.dataset.aspectRatio = w / h;
+
+        // Append Image
+        wrapper.appendChild(img);
+
+        // Append 8 Handles
+        const handles = ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se'];
+        handles.forEach((type) => {
+          const handle = document.createElement('div');
+          handle.className = `handle handle-${type}`;
+          handle.dataset.handle = type;
+          wrapper.appendChild(handle);
+        });
+
+        canvas.appendChild(wrapper);
+
+        // Select newly added image
+        selectImage(wrapper);
+
+        // Setup Drag & Resize Listeners
+        initInteraction(wrapper);
+      };
+    }
+
+    // SELECTION HANDLING
+    function selectImage(wrapper) {
+      if (selectedWrapper === wrapper) return;
+      deselectAll();
+
+      selectedWrapper = wrapper;
+      selectedWrapper.classList.add('selected');
+
+      // Enable Toolbar buttons
+      btnCenterH.disabled = false;
+      btnCenterV.disabled = false;
+      btnDelete.disabled = false;
+    }
+
+    function deselectAll() {
+      if (selectedWrapper) {
+        selectedWrapper.classList.remove('selected');
+        selectedWrapper = null;
+      }
+      btnCenterH.disabled = true;
+      btnCenterV.disabled = true;
+      btnDelete.disabled = true;
+    }
+
+    // Click outside canvas image deselects
+    canvas.addEventListener('mousedown', (e) => {
+      if (e.target === canvas) {
+        deselectAll();
+      }
+    });
+
+    // INTERACTION (DRAG & RESIZE)
+    function initInteraction(wrapper) {
+      let isDragging = false;
+      let isResizing = false;
+      let activeHandle = null;
+
+      let startX, startY;
+      let initLeft, initTop, initWidth, initHeight;
+      let aspectRatio;
+
+      wrapper.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
+        selectImage(wrapper);
+
+        startX = e.clientX;
+        startY = e.clientY;
+        initLeft = parseFloat(wrapper.style.left);
+        initTop = parseFloat(wrapper.style.top);
+        initWidth = parseFloat(wrapper.style.width);
+        initHeight = parseFloat(wrapper.style.height);
+        aspectRatio = parseFloat(wrapper.dataset.aspectRatio) || (initWidth / initHeight);
+
+        if (e.target.classList.contains('handle')) {
+          isResizing = true;
+          activeHandle = e.target.dataset.handle;
+        } else {
+          isDragging = true;
+        }
+
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', onMouseUp);
+      });
+
+      function onMouseMove(e) {
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+
+        if (isDragging) {
+          wrapper.style.left = (initLeft + dx) + 'px';
+          wrapper.style.top = (initTop + dy) + 'px';
+        } else if (isResizing) {
+          resizeImage(dx, dy);
+        }
+      }
+
+      function resizeImage(dx, dy) {
+        let newWidth = initWidth;
+        let newHeight = initHeight;
+        let newLeft = initLeft;
+        let newTop = initTop;
+
+        switch (activeHandle) {
+          case 'se': // Bottom-Right
+            newWidth = Math.max(MIN_SIZE, initWidth + dx);
+            newHeight = newWidth / aspectRatio;
+            break;
+
+          case 'sw': // Bottom-Left
+            newWidth = Math.max(MIN_SIZE, initWidth - dx);
+            newHeight = newWidth / aspectRatio;
+            newLeft = initLeft + (initWidth - newWidth);
+            break;
+
+          case 'ne': // Top-Right
+            newWidth = Math.max(MIN_SIZE, initWidth + dx);
+            newHeight = newWidth / aspectRatio;
+            newTop = initTop + (initHeight - newHeight);
+            break;
+
+          case 'nw': // Top-Left
+            newWidth = Math.max(MIN_SIZE, initWidth - dx);
+            newHeight = newWidth / aspectRatio;
+            newLeft = initLeft + (initWidth - newWidth);
+            newTop = initTop + (initHeight - newHeight);
+            break;
+
+          case 'e': // Middle-Right
+            newWidth = Math.max(MIN_SIZE, initWidth + dx);
+            newHeight = newWidth / aspectRatio;
+            newTop = initTop + (initHeight - newHeight) / 2;
+            break;
+
+          case 'w': // Middle-Left
+            newWidth = Math.max(MIN_SIZE, initWidth - dx);
+            newHeight = newWidth / aspectRatio;
+            newLeft = initLeft + (initWidth - newWidth);
+            newTop = initTop + (initHeight - newHeight) / 2;
+            break;
+
+          case 's': // Bottom-Center
+            newHeight = Math.max(MIN_SIZE, initHeight + dy);
+            newWidth = newHeight * aspectRatio;
+            newLeft = initLeft + (initWidth - newWidth) / 2;
+            break;
+
+          case 'n': // Top-Center
+            newHeight = Math.max(MIN_SIZE, initHeight - dy);
+            newWidth = newHeight * aspectRatio;
+            newTop = initTop + (initHeight - newHeight);
+            newLeft = initLeft + (initWidth - newWidth) / 2;
+            break;
+        }
+
+        // Apply calculated styles
+        wrapper.style.width = newWidth + 'px';
+        wrapper.style.height = newHeight + 'px';
+        wrapper.style.left = newLeft + 'px';
+        wrapper.style.top = newTop + 'px';
+      }
+
+      function onMouseUp() {
+        isDragging = false;
+        isResizing = false;
+        activeHandle = null;
+        window.removeEventListener('mousemove', onMouseMove);
+        window.removeEventListener('mouseup', onMouseUp);
+      }
+    }
+
+    // CENTERING CONTROLS
+    btnCenterH.addEventListener('click', () => {
+      if (!selectedWrapper) return;
+      const w = parseFloat(selectedWrapper.style.width);
+      const canvasWidth = canvas.clientWidth;
+      selectedWrapper.style.left = ((canvasWidth - w) / 2) + 'px';
+    });
+
+    btnCenterV.addEventListener('click', () => {
+      if (!selectedWrapper) return;
+      const h = parseFloat(selectedWrapper.style.height);
+      const canvasHeight = canvas.clientHeight;
+      selectedWrapper.style.top = ((canvasHeight - h) / 2) + 'px';
+    });
+
+    // DELETE CONTROL
+    function deleteSelected() {
+      if (!selectedWrapper) return;
+      selectedWrapper.remove();
+      deselectAll();
+
+      if (canvas.querySelectorAll('.canvas-image-wrapper').length === 0) {
+        emptyState.style.display = 'block';
+      }
+    }
+
+    btnDelete.addEventListener('click', deleteSelected);
+
+    // Keyboard Shortcuts (Delete & Backspace)
+    window.addEventListener('keydown', (e) => {
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedWrapper) {
+        deleteSelected();
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,220 @@
+import React, { useEffect } from 'react';
+import {
+  CATEGORIES,
+  DEMO_VIDEOS,
+  DEMO_GALLERIES
+} from '../data/demo';
+import { useRouter, Link } from '../context/RouterContext';
+import { StoryCard } from '../components/StoryCard';
+import { SectionBlock } from '../components/SectionBlock';
+import { TrendingWidget } from '../components/TrendingWidget';
+import { AdSlot } from '../components/AdSlot';
+import { getVideoTitle, getGalleryTitle, formatViews } from '../utils/translations';
+import { Video, Camera, Play } from 'lucide-react';
+import { ImageWithFallback } from '../components/ImageWithFallback';
+import { useStoriesStore } from '../stores/storiesStore';
+import { useHomepageStore } from '../stores/homepageStore';
+
+export const HomePage: React.FC = () => {
+  const { updateMetadata, lang, t } = useRouter();
+  const { stories } = useStoriesStore();
+  const { layout } = useHomepageStore();
+
+  useEffect(() => {
+    if (lang === 'en') {
+      updateMetadata({
+        title: 'Bharat News Live - Breaking News, Politics, Cricket & Video Bulletins',
+        description: 'Latest breaking headlines, live cricket scores, political analysis, business insights, tech and entertainment reports 24x7.'
+      });
+    } else {
+      updateMetadata({
+        title: 'भारत समाचार लाइव - ताज़ा ख़बरें, राजनीति, क्रिकेट व वीडियो',
+        description: 'देश और दुनिया की ब्रेकिंग न्यूज़, लाइव स्कोर, राजनीति, व्यापार और मनोरंजन की ताज़ा ख़बरें पढ़ें।'
+      });
+    }
+  }, [lang, updateMetadata]);
+
+  // Convert admin stories format to public Article format for rendering
+  const publishedStories = stories
+    .filter(s => s.status === 'published')
+    .map(s => ({
+      id: s.id,
+      idSlug: s.slug || s.id,
+      title: s.headline,
+      summary: s.summary,
+      body: [s.body],
+      categorySlug: (s.section || 'national').toLowerCase().replace(/[^a-z0-9]+/g, ''),
+      categoryName: s.section || 'National',
+      author: {
+        name: s.byline || 'Staff Reporter',
+        role: 'Journalist',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80'
+      },
+      imageUrl: s.mainImage || 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80',
+      imageCaption: s.mainImageCaption || '',
+      publishedAt: s.publishDate || s.createdAt,
+      readTimeMinutes: 3,
+      isBreaking: s.isBreaking,
+      isFeatured: s.isFeatured,
+      isTrending: s.isTrending,
+      viewsCount: s.views || 100,
+      tags: s.topics || ['News']
+    }));
+
+  // Resolve layout slots from homepageStore or fall back to published list
+  const heroStoryId = layout.hero[0];
+  const leadStory = publishedStories.find(s => s.id === heroStoryId) || publishedStories[0];
+  const secondaryStories = publishedStories.filter(s => s.id !== leadStory?.id).slice(0, 3);
+  const trendingArticles = publishedStories.filter(s => s.isTrending || s.isFeatured).slice(0, 5);
+
+  const getArticlesByCategory = (catSlug: string) =>
+    publishedStories.filter(s => s.categorySlug === catSlug || s.categoryName.toLowerCase().includes(catSlug));
+
+  const nationalArticles = getArticlesByCategory('national');
+  const politicsArticles = getArticlesByCategory('politics');
+  const cricketArticles = getArticlesByCategory('cricket');
+  const entertainmentArticles = getArticlesByCategory('entertainment');
+  const techArticles = getArticlesByCategory('tech');
+  const businessArticles = getArticlesByCategory('business');
+
+  if (!leadStory) return null;
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      {/* 1. Top Leaderboard Banner Ad */}
+      <AdSlot
+        format="leaderboard"
+        slotName={lang === 'en' ? 'Main Sponsor Banner' : 'प्रमुख प्रायोजक | Main Sponsor Banner'}
+      />
+
+      {/* 2. Top Lead Hero + Featured Grid + Trending Sidebar Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-4">
+        {/* Main Content Area (8 Cols) */}
+        <div className="lg:col-span-8 space-y-6">
+          {/* Hero Lead Story */}
+          <StoryCard article={leadStory} variant="lead" />
+
+          {/* Secondary Featured Grid (3 Cols) */}
+          {secondaryStories.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+              {secondaryStories.map(story => (
+                <StoryCard key={story.id} article={story} variant="grid" />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Right Sidebar Widget Area (4 Cols) */}
+        <div className="lg:col-span-4 space-y-6">
+          {/* Trending Stories List */}
+          <TrendingWidget articles={trendingArticles.length > 0 ? trendingArticles : publishedStories.slice(0, 5)} />
+
+          {/* Sidebar Square Ad */}
+          <AdSlot
+            format="square"
+            slotName={lang === 'en' ? 'Sidebar Promo' : 'साइडबार विज्ञापन | Sidebar Ad'}
+          />
+        </div>
+      </div>
+
+      {/* 3. Section Category Grid */}
+      <div className="mt-10 space-y-10">
+        {/* National News */}
+        {nationalArticles.length > 0 && (
+          <SectionBlock
+            categorySlug="national"
+            categoryName={lang === 'en' ? 'National News' : 'देश / राष्ट्र'}
+            articles={nationalArticles}
+          />
+        )}
+
+        {/* Politics */}
+        {politicsArticles.length > 0 && (
+          <SectionBlock
+            categorySlug="politics"
+            categoryName={lang === 'en' ? 'Politics' : 'राजनीति'}
+            articles={politicsArticles}
+          />
+        )}
+
+        {/* In-feed Mid Leaderboard Ad */}
+        <AdSlot
+          format="leaderboard"
+          slotName={lang === 'en' ? 'Mid Content Banner' : 'मध्य पृष्ठ विज्ञापन'}
+        />
+
+        {/* Cricket / Sports */}
+        {cricketArticles.length > 0 && (
+          <SectionBlock
+            categorySlug="cricket"
+            categoryName={lang === 'en' ? 'Cricket & Sports' : 'क्रिकेट और खेल'}
+            articles={cricketArticles}
+          />
+        )}
+
+        {/* Video News Carousel Section */}
+        <section className="bg-gray-900 text-white p-6 rounded-2xl shadow-xl border border-gray-800">
+          <div className="flex items-center justify-between mb-4 border-b border-gray-800 pb-3">
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-rose-600 animate-pulse"></span>
+              <h2 className="text-xl font-bold font-serif flex items-center gap-2">
+                <Video className="w-5 h-5 text-rose-500" />
+                {lang === 'en' ? 'Video Bulletins & Reports' : 'वीडियो बुलेटिन और रिपोर्ट'}
+              </h2>
+            </div>
+            <Link href="/videos" className="text-xs font-bold text-rose-400 hover:text-rose-300 uppercase tracking-wider">
+              {lang === 'en' ? 'View All Videos →' : 'सभी वीडियो देखें →'}
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {DEMO_VIDEOS.slice(0, 3).map(vid => (
+              <Link key={vid.id} href={`/videos/${vid.idSlug}`} className="group block">
+                <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-800 mb-2">
+                  <ImageWithFallback src={vid.thumbnailUrl} alt={getVideoTitle(vid, lang)} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/20 transition-colors">
+                    <div className="w-10 h-10 rounded-full bg-rose-600/90 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                      <Play className="w-5 h-5 fill-white ml-0.5" />
+                    </div>
+                  </div>
+                  <span className="absolute bottom-2 right-2 bg-black/80 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
+                    {vid.duration}
+                  </span>
+                </div>
+                <h3 className="font-semibold text-sm line-clamp-2 group-hover:text-rose-400 transition-colors">
+                  {getVideoTitle(vid, lang)}
+                </h3>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        {/* Business & Tech Side-by-Side */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {businessArticles.length > 0 && (
+            <SectionBlock
+              categorySlug="business"
+              categoryName={lang === 'en' ? 'Business & Economy' : 'व्यापार और अर्थव्यवस्था'}
+              articles={businessArticles}
+            />
+          )}
+          {techArticles.length > 0 && (
+            <SectionBlock
+              categorySlug="tech"
+              categoryName={lang === 'en' ? 'Tech & AI' : 'तकनीक और AI'}
+              articles={techArticles}
+            />
+          )}
+        </div>
+
+        {/* Entertainment */}
+        {entertainmentArticles.length > 0 && (
+          <SectionBlock
+            categorySlug="entertainment"
+            categoryName={lang === 'en' ? 'Entertainment' : 'मनोरंजन'}
+            articles={entertainmentArticles}
+          />
+        )}
+      </div>
+    </div>
+  );
+};

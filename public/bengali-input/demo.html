@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline Bengali Smart Typing & Transliteration System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="bengali-input.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Noto Sans Bengali', system-ui, -apple-system, sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 32px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+      border: 1px solid #e2e8f0;
+    }
+    h1 {
+      font-size: 26px;
+      font-weight: 800;
+      color: #e11d48;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    p.sub {
+      color: #64748b;
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+    .control-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f1f5f9;
+      padding: 12px 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    .toggle-label {
+      font-weight: 700;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    textarea {
+      width: 100%;
+      height: 240px;
+      padding: 16px;
+      font-size: 18px;
+      line-height: 1.6;
+      border: 2px solid #cbd5e1;
+      border-radius: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      font-family: 'Noto Sans Bengali', Georgia, serif;
+      resize: vertical;
+    }
+    textarea:focus {
+      border-color: #e11d48;
+      box-shadow: 0 0 0 4px rgba(225, 29, 72, 0.1);
+    }
+    .test-suite {
+      margin-top: 40px;
+      border-top: 2px dashed #e2e8f0;
+      padding-top: 24px;
+    }
+    .test-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .test-card {
+      background: #f8fafc;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .test-pass { border-left: 4px solid #10b981; }
+    .test-fail { border-left: 4px solid #ef4444; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>⌨️ Offline Bengali Smart Typing System</h1>
+  <p class="sub">100% Client-side. Zero API Calls. No internet required. Type in Roman (e.g. <code>ami bangla likhi</code>) or Devanagari (e.g. <code>अ</code>) and press SPACE.</p>
+
+  <div class="control-bar">
+    <label class="toggle-label">
+      <input type="checkbox" id="bengali-toggle" checked style="width: 18px; height: 18px; accent-color: #e11d48;">
+      <span>Enable Bengali Smart Typing (বাংলা টাইপিং চালু)</span>
+    </label>
+    <span style="font-size: 12px; color: #64748b; font-weight: 600;">Status: <span id="status-text" style="color: #10b981;">Active</span></span>
+  </div>
+
+  <textarea id="article-editor" placeholder="Type here in Roman/English (e.g. ami bangla bhalobashi) and press SPACE..."></textarea>
+
+  <div class="test-suite">
+    <h2>🧪 Automated Test Suite (50+ Verifications)</h2>
+    <p style="font-size: 13px; color: #64748b; margin-top: 4px;">Engine transliteration verifications against expected Bengali outputs:</p>
+    <div id="test-grid" class="test-grid"></div>
+  </div>
+</div>
+
+<script src="bengali-dictionary.js"></script>
+<script src="bengali-rules.js"></script>
+<script src="bengali-engine.js"></script>
+<script src="bengali-input.js"></script>
+
+<script>
+  // Attach Bengali Smart Typing
+  BengaliInput.attach('#article-editor', {
+    suggestion: true,
+    convertOnSpace: true,
+    convertOnEnter: true
+  });
+
+  // Toggle Control
+  const toggle = document.getElementById('bengali-toggle');
+  const statusText = document.getElementById('status-text');
+
+  toggle.addEventListener('change', (e) => {
+    const isChecked = e.target.checked;
+    BengaliInput.toggle('#article-editor', isChecked);
+    statusText.textContent = isChecked ? 'Active' : 'Disabled';
+    statusText.style.color = isChecked ? '#10b981' : '#64748b';
+  });
+
+  // Run 50+ Automated Unit Tests
+  const TEST_CASES = [
+    { input: 'ami', expected: 'আমি' },
+    { input: 'amar', expected: 'আমার' },
+    { input: 'tumi', expected: 'তুমি' },
+    { input: 'tomar', expected: 'তোমার' },
+    { input: 'bangla', expected: 'বাংলা' },
+    { input: 'bhalo', expected: 'ভালো' },
+    { input: 'kemon', expected: 'কেমন' },
+    { input: 'ache', expected: 'আছে' },
+    { input: 'bhalobashi', expected: 'ভালোবাসি' },
+    { input: 'dhonnobad', expected: 'ধন্যবাদ' },
+    { input: 'kolkata', expected: 'কলকাতা' },
+    { input: 'dhaka', expected: 'ঢাকা' },
+    { input: 'bharat', expected: 'भारत' },
+    { input: 'bhasha', expected: 'ভাষা' },
+    { input: 'desh', expected: 'দেশ' },
+    { input: 'somoy', expected: 'সময়' },
+    { input: 'potrika', expected: 'পত্রিকা' },
+    { input: 'khobor', expected: 'খবর' },
+    { input: 'manush', expected: 'মানুষ' },
+    { input: 'bondu', expected: 'বন্ধু' },
+    { input: 'bohi', expected: 'বই' },
+    { input: 'kaaj', expected: 'কাজ' },
+    { input: 'chele', expected: 'ছেলে' },
+    { input: 'din', expected: 'দিন' },
+    { input: 'raat', expected: 'রাত' },
+    { input: 'shokal', expected: 'সকাল' },
+    { input: 'bochor', expected: 'বছর' },
+    { input: 'paisha', expected: 'পয়সা' },
+    { input: 'bazar', expected: 'বাজার' },
+    { input: 'akash', expected: 'আকাশ' },
+    { input: 'phool', expected: 'ফুল' },
+    { input: 'cha', expected: 'চা' },
+    { input: 'dudh', expected: 'দুধ' },
+    { input: 'shohor', expected: 'শহর' },
+    { input: 'gram', expected: 'গ্রাম' },
+    { input: 'jibon', expected: 'জীবন' },
+    { input: 'shanti', expected: 'শান্তি' },
+    { input: 'khushi', expected: 'খুশি' },
+    { input: 'anondo', expected: 'আনন্দ' },
+    { input: 'dukho', expected: 'দুঃখ' },
+    { input: 'koshto', expected: 'কষ্ট' },
+    { input: 'notun', expected: 'নতুন' },
+    { input: 'purano', expected: 'পুরোনো' },
+    { input: 'beshi', expected: 'বেশি' },
+    { input: 'kom', expected: 'কম' },
+    { input: 'anek', expected: 'অনেক' },
+    { input: 'khub', expected: 'খুব' },
+    { input: 'aaste', expected: 'আস্তে' },
+    { input: 'prothom', expected: 'প্রথম' },
+    { input: 'shesh', expected: 'শেষ' }
+  ];
+
+  const grid = document.getElementById('test-grid');
+  TEST_CASES.forEach((tc) => {
+    const sugg = BengaliEngine.getBengaliSuggestion(tc.input);
+    const pass = sugg.primary === tc.expected;
+
+    const div = document.createElement('div');
+    div.className = `test-card ${pass ? 'test-pass' : 'test-fail'}`;
+    div.innerHTML = `
+      <span><strong>${tc.input}</strong> → ${sugg.primary}</span>
+      <span style="color: ${pass ? '#10b981' : '#ef4444'}; font-weight: 700;">${pass ? '✓ PASS' : '✗ FAIL'}</span>
+    `;
+    grid.appendChild(div);
+  });
+</script>
+</body>
+</html>

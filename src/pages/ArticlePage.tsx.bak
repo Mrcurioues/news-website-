@@ -1,0 +1,307 @@
+import React, { useState, useEffect } from 'react';
+import { getArticleByIdSlug, getRelatedArticles, getTrendingArticles } from '../data/demo';
+import { useRouter, Link } from '../context/RouterContext';
+import { ImageWithFallback } from '../components/ImageWithFallback';
+import { ShareBar } from '../components/ShareBar';
+import { StoryCard } from '../components/StoryCard';
+import { TrendingWidget } from '../components/TrendingWidget';
+import { AdSlot } from '../components/AdSlot';
+import { useStoriesStore } from '../stores/storiesStore';
+import { Article } from '../types';
+import {
+  getArticleTitle,
+  getArticleExcerpt,
+  getArticleBody,
+  getArticleKeyPoints,
+  getArticleTags,
+  getArticleAuthorName,
+  getArticleAuthorRole,
+  getArticlePublishedAt,
+  getCategoryName,
+  formatViews
+} from '../utils/translations';
+import {
+  ChevronRight,
+  Clock,
+  Eye,
+  Volume2,
+  VolumeX,
+  Type,
+  CheckCircle2,
+  ArrowLeft
+} from 'lucide-react';
+
+interface ArticlePageProps {
+  idSlug: string;
+}
+
+export const ArticlePage: React.FC<ArticlePageProps> = ({ idSlug }) => {
+  const { updateMetadata, lang, t } = useRouter();
+  const { stories } = useStoriesStore();
+  const [fontSize, setFontSize] = useState<'sm' | 'base' | 'lg' | 'xl'>('base');
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+
+  // Check store first for dynamic story, fallback to static
+  const dynamicStory = stories.find(s => s.slug === idSlug || s.id === idSlug);
+  const staticArticle = getArticleByIdSlug(idSlug);
+
+  const mappedDynamic: Article | undefined = dynamicStory
+    ? {
+        id: dynamicStory.id,
+        slug: dynamicStory.slug || dynamicStory.id,
+        idSlug: dynamicStory.slug || dynamicStory.id,
+        title: dynamicStory.headline,
+        titleEn: dynamicStory.headline,
+        excerpt: dynamicStory.summary,
+        excerptEn: dynamicStory.summary,
+        category: dynamicStory.section || 'National',
+        categorySlug: (dynamicStory.section || 'national').toLowerCase().replace(/[^a-z0-9]+/g, ''),
+        author: {
+          name: dynamicStory.byline || 'Staff Reporter',
+          nameHi: dynamicStory.byline || 'संवाददाता',
+          role: 'Journalist',
+          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80'
+        },
+        publishedAt: dynamicStory.publishDate || dynamicStory.createdAt,
+        readTime: '3 मिनट',
+        readTimeEn: '3 min read',
+        coverImage: dynamicStory.mainImage || 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80',
+        imageCaption: dynamicStory.mainImageCaption || '',
+        tags: dynamicStory.topics || ['News'],
+        body: [dynamicStory.body],
+        bodyEn: [dynamicStory.body],
+        isBreaking: dynamicStory.isBreaking,
+        isTrending: dynamicStory.isTrending,
+        views: dynamicStory.views || 150
+      }
+    : undefined;
+
+  const article: Article | undefined = mappedDynamic || staticArticle;
+
+  useEffect(() => {
+    if (article) {
+      const title = getArticleTitle(article, lang);
+      const excerpt = getArticleExcerpt(article, lang);
+      updateMetadata({
+        title: `${title} - ${t.appName}`,
+        description: excerpt,
+        ogImage: article.coverImage
+      });
+    }
+  }, [article, lang, t.appName, updateMetadata]);
+
+  if (!article) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-20 text-center">
+        <h1 className="text-3xl font-black text-gray-900 mb-4">
+          {lang === 'en' ? 'Article Not Found' : 'समाचार उपलब्ध नहीं है (Article Not Found)'}
+        </h1>
+        <p className="text-gray-600 mb-6">
+          {lang === 'en'
+            ? 'The story you are looking for may have been moved or unpublished.'
+            : 'जिस समाचार को आप ढूंढ रहे हैं वह हटा दिया गया है या मौजूद नहीं है।'}
+        </p>
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 px-6 py-2.5 bg-rose-600 text-white rounded-lg font-bold text-sm hover:bg-rose-700 transition-colors shadow-sm"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          {lang === 'en' ? 'Return to Home' : 'मुख्य पृष्ठ पर लौटें'}
+        </Link>
+      </div>
+    );
+  }
+
+  const title = getArticleTitle(article, lang);
+  const excerpt = getArticleExcerpt(article, lang);
+  const bodyParagraphs = getArticleBody(article, lang);
+  const keyPoints = getArticleKeyPoints(article, lang);
+  const tags = getArticleTags(article, lang);
+  const authorName = getArticleAuthorName(article, lang);
+  const authorRole = getArticleAuthorRole(article, lang);
+  const publishedAt = getArticlePublishedAt(article, lang);
+  const categoryName = getCategoryName(article.categorySlug, lang);
+
+  const relatedArticles = getRelatedArticles(article.id, 3);
+  const trendingArticles = getTrendingArticles(5);
+
+  const fontClasses = {
+    sm: 'text-base leading-relaxed',
+    base: 'text-lg leading-relaxed',
+    lg: 'text-xl leading-relaxed',
+    xl: 'text-2xl leading-relaxed'
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      {/* Top Banner Ad */}
+      <AdSlot format="leaderboard" slotName="Article Top Leaderboard" />
+
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-wider my-4 overflow-x-auto whitespace-nowrap">
+        <Link href="/" className="hover:text-rose-600">Home</Link>
+        <ChevronRight className="w-3 h-3 text-gray-400" />
+        <Link href={`/category/${article.categorySlug}`} className="hover:text-rose-600">
+          {categoryName}
+        </Link>
+        <ChevronRight className="w-3 h-3" />
+        <span className="text-gray-400 truncate max-w-[200px] sm:max-w-xs">{title}</span>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Main Article Body (8 Cols) */}
+        <article className="lg:col-span-8 bg-white p-6 sm:p-8 rounded-2xl border border-gray-200/80 shadow-xs">
+          {/* Category Tag */}
+          <div className="mb-3 flex items-center gap-2">
+            <span className="bg-rose-100 text-rose-700 text-xs font-black uppercase tracking-widest px-2.5 py-1 rounded">
+              {categoryName}
+            </span>
+            {article.isBreaking && (
+              <span className="bg-rose-600 text-white text-xs font-black uppercase tracking-widest px-2.5 py-1 rounded animate-pulse">
+                BREAKING
+              </span>
+            )}
+          </div>
+
+          {/* Title */}
+          <h1 className="text-2xl sm:text-4xl font-black text-gray-950 font-serif leading-tight sm:leading-tight mb-4">
+            {title}
+          </h1>
+
+          {/* Excerpt Summary */}
+          {excerpt && (
+            <p className="text-lg sm:text-xl font-medium text-gray-700 leading-relaxed mb-6 border-l-4 border-rose-600 pl-4 py-1 bg-gray-50/50 rounded-r-lg">
+              {excerpt}
+            </p>
+          )}
+
+          {/* Meta Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-4 py-4 border-y border-gray-100 mb-6 text-xs text-gray-600">
+            {/* Author */}
+            <div className="flex items-center gap-3">
+              <img src={article.author.avatar} alt={authorName} className="w-10 h-10 rounded-full object-cover border border-rose-200" />
+              <div>
+                <div className="font-bold text-gray-900 text-sm flex items-center gap-1">
+                  {authorName}
+                  <CheckCircle2 className="w-3.5 h-3.5 text-blue-500 fill-blue-50" />
+                </div>
+                <div className="text-gray-500">{authorRole}</div>
+              </div>
+            </div>
+
+            {/* Time & Views */}
+            <div className="flex items-center gap-4 text-gray-500">
+              <div className="flex items-center gap-1.5">
+                <Clock className="w-4 h-4 text-gray-400" />
+                <span>{publishedAt}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Eye className="w-4 h-4 text-gray-400" />
+                <span>{formatViews(article.views, lang)}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Controls Bar */}
+          <div className="flex items-center justify-between bg-gray-50 p-3 rounded-xl mb-6">
+            {/* Audio Listen */}
+            <button
+              onClick={() => setIsPlayingAudio(!isPlayingAudio)}
+              className={`flex items-center gap-2 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
+                isPlayingAudio ? 'bg-rose-600 text-white' : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              {isPlayingAudio ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-rose-600" />}
+              <span>{isPlayingAudio ? (lang === 'en' ? 'Stop Listening' : 'सुनना बंद करें') : (lang === 'en' ? 'Listen to Story' : 'ख़बर सुनें')}</span>
+            </button>
+
+            {/* Font Size Adjuster */}
+            <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg p-1">
+              <Type className="w-3.5 h-3.5 text-gray-400 ml-1.5 mr-1" />
+              {(['sm', 'base', 'lg', 'xl'] as const).map(sz => (
+                <button
+                  key={sz}
+                  onClick={() => setFontSize(sz)}
+                  className={`px-2 py-0.5 text-xs font-bold rounded cursor-pointer ${
+                    fontSize === sz ? 'bg-rose-600 text-white' : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  {sz.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Main Cover Image */}
+          <div className="mb-6 rounded-xl overflow-hidden shadow-sm">
+            <ImageWithFallback src={article.coverImage} alt={title} className="w-full h-auto max-h-[450px] object-cover" />
+          </div>
+
+          {/* Key Takeaways Box */}
+          {keyPoints && keyPoints.length > 0 && (
+            <div className="bg-rose-50/60 border border-rose-100 rounded-xl p-5 mb-8">
+              <h3 className="text-sm font-bold text-rose-900 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-rose-600"></span>
+                {lang === 'en' ? 'Key Takeaways' : 'मुख्य बातें'}
+              </h3>
+              <ul className="space-y-2 text-sm font-medium text-gray-800">
+                {keyPoints.map((pt, idx) => (
+                  <li key={idx} className="flex items-start gap-2">
+                    <span className="text-rose-600 font-bold shrink-0">•</span>
+                    <span>{pt}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Paragraphs */}
+          <div className={`space-y-6 text-gray-800 font-sans ${fontClasses[fontSize]}`}>
+            {bodyParagraphs.map((para, i) => (
+              <p key={i} className="leading-relaxed whitespace-pre-line">
+                {para}
+              </p>
+            ))}
+          </div>
+
+          {/* Tags */}
+          {tags.length > 0 && (
+            <div className="mt-8 pt-6 border-t border-gray-100 flex flex-wrap items-center gap-2">
+              <span className="text-xs font-bold text-gray-400 uppercase tracking-wider mr-1">Tags:</span>
+              {tags.map(tg => (
+                <span key={tg} className="bg-gray-100 text-gray-700 text-xs font-semibold px-3 py-1 rounded-full hover:bg-gray-200 transition-colors cursor-pointer">
+                  #{tg}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Social Share Bar */}
+          <div className="mt-8 pt-6 border-t border-gray-100">
+            <ShareBar title={title} url={window.location.href} />
+          </div>
+        </article>
+
+        {/* Sidebar (4 Cols) */}
+        <aside className="lg:col-span-4 space-y-6">
+          <TrendingWidget articles={trendingArticles} />
+          <AdSlot format="square" slotName="Article Sidebar Ad" />
+        </aside>
+      </div>
+
+      {/* Related Stories */}
+      {relatedArticles.length > 0 && (
+        <section className="mt-12 pt-8 border-t border-gray-200">
+          <h2 className="text-xl font-bold font-serif text-gray-900 mb-6">
+            {lang === 'en' ? 'Related News Stories' : 'संबंधित समाचार'}
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {relatedArticles.map(rel => (
+              <StoryCard key={rel.id} article={rel} variant="grid" />
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+  );
+};

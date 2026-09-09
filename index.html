@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="bn">
+  <head>
+    <script>
+      (function() {
+        try {
+          var win = typeof window !== 'undefined' ? window : globalThis;
+          if (win) {
+            var origFetch = typeof win.fetch === 'function' ? win.fetch.bind(win) : null;
+            var currentFetch = origFetch;
+            Object.defineProperty(win, 'fetch', {
+              get: function() {
+                return currentFetch;
+              },
+              set: function(val) {
+                currentFetch = typeof val === 'function' ? val : origFetch;
+              },
+              configurable: true,
+              enumerable: true
+            });
+            if (typeof Window !== 'undefined' && Window.prototype) {
+              try {
+                var desc = Object.getOwnPropertyDescriptor(Window.prototype, 'fetch');
+                if (desc && !desc.set && desc.configurable) {
+                  Object.defineProperty(Window.prototype, 'fetch', {
+                    get: function() {
+                      return currentFetch;
+                    },
+                    set: function(val) {
+                      currentFetch = typeof val === 'function' ? val : origFetch;
+                    },
+                    configurable: true,
+                    enumerable: true
+                  });
+                }
+              } catch (e) {}
+            }
+          }
+        } catch (err) {
+          // Ignore
+        }
+      })();
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ভারত সমাচার লাইভ | Bharat Samachar Live - Bengali News Portal</title>
+    <meta name="description" content="ভারত ও বিশ্বের সর্বশেষ সংবাদ, রাজনীতি, নতুন খবরাখবর - Bharat Samachar Live." />
+    <meta property="og:title" content="ভারত সমাচার লাইভ | Bharat Samachar Live" />
+    <meta property="og:description" content="ভারত ও বিশ্বের সর্বশেষ সংবাদ, ব্রেকিং নিউজ এবং লাইভ আপডেট।" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700;800&family=Tiro+Bangla:ital@0;1&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="alternate" hreflang="hi" href="https://bharatsamachar.com/?lang=hi" />
+    <link rel="alternate" hreflang="en" href="https://bharatsamachar.com/?lang=en" />
+    <link rel="alternate" hreflang="bn" href="https://bharatsamachar.com/?lang=bn" />
+    <link rel="alternate" hreflang="x-default" href="https://bharatsamachar.com/?lang=en" />
+  </head>
+  <body class="bg-gray-100 text-gray-900 antialiased font-sans">
+    <div id="root"></div>
+    <div id="error-log" style="color: red; padding: 20px; font-family: monospace; white-space: pre-wrap;"></div>
+    <script>
+      window.onerror = function(msg, url, lineNo, columnNo, error) {
+        document.getElementById("error-log").innerText += "\nERROR: " + msg + "\n" + (error && error.stack ? error.stack : "");
+        return false;
+      };
+      window.addEventListener("unhandledrejection", function(event) {
+        document.getElementById("error-log").innerText += "\nPROMISE ERROR: " + event.reason;
+      });
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
