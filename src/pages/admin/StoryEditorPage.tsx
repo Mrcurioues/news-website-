@@ -5,7 +5,7 @@ import {
   List, ListOrdered, Quote, Link2, Image as ImageIcon,
   Video, Hash, AlertCircle, Lock, Globe, Save, Calendar,
   FileText, Share2, Settings, ChevronRight, Clock, MapPin,
-  User, Tag, Upload, Search, Plus, ExternalLink, Sparkles, SlidersHorizontal, Volume2, Code
+  User, Tag, Upload, Search, Plus, ExternalLink, Sparkles, SlidersHorizontal, Volume2, Code, HelpCircle
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useStoriesStore } from '../../stores/storiesStore';
@@ -1076,6 +1076,14 @@ export const StoryEditorPage: React.FC<StoryEditorPageProps> = ({ storyId, onNav
                       className="px-2 py-1 text-xs font-bold bg-purple-100 text-purple-800 hover:bg-purple-200 rounded-lg cursor-pointer flex items-center gap-1 transition-colors"
                     >
                       <Volume2 className="w-3.5 h-3.5" /> Audio
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => insertVisualHtml('<div class="my-6 border border-emerald-200 bg-emerald-50/60 p-5 rounded-2xl space-y-4"><h3 class="text-lg font-bold text-emerald-950 flex items-center gap-2">❓ Frequently Asked Questions (FAQ)</h3><div class="space-y-3"><div class="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-2xs"><h4 class="font-bold text-sm text-gray-900">Q1: Question example text goes here?</h4><p class="text-xs text-gray-600 mt-1">A: Answer explanation text goes here.</p></div><div class="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-2xs"><h4 class="font-bold text-sm text-gray-900">Q2: Second question example?</h4><p class="text-xs text-gray-600 mt-1">A: Second answer explanation goes here.</p></div></div></div>')}
+                      title="Insert FAQ Section Block"
+                      className="px-2.5 py-1 text-xs font-bold bg-emerald-100 text-emerald-900 hover:bg-emerald-200 rounded-lg cursor-pointer flex items-center gap-1 transition-colors border border-emerald-200"
+                    >
+                      <HelpCircle className="w-3.5 h-3.5 text-emerald-700" /> FAQ Section
                     </button>
                   </>
                 )}
