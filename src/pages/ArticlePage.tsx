@@ -455,6 +455,57 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({ idSlug }) => {
             ))}
           </div>
 
+          {/* DEDICATED 5-QUESTION FAQ SECTION */}
+          <div className="mt-10 pt-8 border-t border-gray-200 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <span className="p-1.5 bg-rose-100 text-rose-600 rounded-lg">❓</span>
+                {lang === 'en' ? 'Frequently Asked Questions (FAQ)' : 'अक्सर पूछे जाने वाले सवाल (FAQ)'}
+              </h3>
+              <span className="text-xs font-semibold bg-rose-50 text-rose-700 px-2.5 py-1 rounded-full border border-rose-100">
+                5 Key Q&A
+              </span>
+            </div>
+
+            <div className="space-y-3">
+              {[
+                {
+                  q: lang === 'en' ? '1. What are the key points of this news report?' : '1. इस मुख्य समाचार के प्रमुख बिंदु क्या हैं?',
+                  a: lang === 'en' ? `This report covers key details regarding ${title}. Ground reports and verified official announcements highlight crucial impact for citizens.` : `इस रिपोर्ट में ${title} से जुड़ी सभी अहम जानकारियां शामिल हैं। आधिकारिक बयानों और धरातली रिपोर्टिंग के आधार पर महत्वपूर्ण विवरण दिए गए हैं।`
+                },
+                {
+                  q: lang === 'en' ? '2. Who is the primary authority or reporter behind this release?' : '2. इस रिपोर्ट और जारी जानकारी के मुख्य स्रोत कौन हैं?',
+                  a: lang === 'en' ? `The article is reported by ${authorName} (${authorRole}) with verified primary sources and official bulletins.` : `यह रिपोर्ट ${authorName} (${authorRole}) द्वारा सत्यापित स्रोतों और आधिकारिक प्रेस विज्ञापनों के आधार पर तैयार की गई है।`
+                },
+                {
+                  q: lang === 'en' ? '3. When was this story published and updated?' : '3. यह समाचार कब प्रकाशित और अपडेट किया गया?',
+                  a: lang === 'en' ? `Originally published on ${publishedAt}. Updates are pushed in real-time as breaking developments arrive.` : `यह समाचार ${publishedAt} को प्रकाशित किया गया है। नई जानकारी आते ही इसे तुरंत अपडेट किया जाता है।`
+                },
+                {
+                  q: lang === 'en' ? '4. Where can I find related official updates?' : '4. इससे जुड़ी अन्य खबरें और अपडेट कहां देखें?',
+                  a: lang === 'en' ? `You can check the ${categoryName} section on Bharat News Portal or visit our trending news ticker.` : `आप भारत न्यूज पोर्टल के ${categoryName} सेक्शन या हमारे ट्रेंडिंग न्यूज बुलेटिन में अन्य खबरें देख सकते हैं।`
+                },
+                {
+                  q: lang === 'en' ? '5. How can readers share or react to this news?' : '5. पाठक इस खबर को कैसे शेयर या प्रतिक्रिया दे सकते हैं?',
+                  a: lang === 'en' ? 'Readers can use the social sharing bar below to share on WhatsApp, X (Twitter), Facebook, or leave verified comments.' : 'पाठक नीचे दिए गए सोशल शेयर बार के जरिए व्हाट्सएप, एक्स (ट्विटर), फेसबुक पर शेयर कर सकते हैं या कमेंट सेक्शन में राय दे सकते हैं।'
+                }
+              ].map((faq, idx) => (
+                <details key={idx} className="group bg-gray-50 border border-gray-200 rounded-xl overflow-hidden transition-all duration-200">
+                  <summary className="flex items-center justify-between p-4 text-sm font-bold text-gray-900 cursor-pointer list-none select-none hover:bg-rose-50/50 transition-colors">
+                    <span className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
+                      {faq.q}
+                    </span>
+                    <span className="text-gray-400 group-open:rotate-180 transition-transform duration-200 font-bold text-xs">▼</span>
+                  </summary>
+                  <div className="px-4 pb-4 pt-1 text-xs text-gray-600 leading-relaxed border-t border-gray-100 bg-white">
+                    {faq.a}
+                  </div>
+                </details>
+              ))}
+            </div>
+          </div>
+
           {/* Tags */}
           {tags.length > 0 && (
             <div className="mt-8 pt-6 border-t border-gray-100 flex flex-wrap items-center gap-2">
